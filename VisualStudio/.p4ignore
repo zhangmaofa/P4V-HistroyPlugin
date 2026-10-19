@@ -1,0 +1,7 @@
+/src/P4LineLens/bin/
+/src/P4LineLens/obj/
+/tests/P4LineLens.Tests/bin/
+/tests/P4LineLens.Tests/obj/
+!/P4LineLens.sln
+!/src/P4LineLens/P4LineLens.csproj
+!/tests/P4LineLens.Tests/P4LineLens.Tests.csproj
