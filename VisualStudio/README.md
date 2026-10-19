@@ -10,6 +10,16 @@ P4 Histroy Plugin 是一个面向 Visual Studio 2022 的轻量 VSIX。在代码�
 
 插件主体使用 C#（.NET Framework 4.7.2）和 WPF，实现为 Visual Studio 的 MEF 编辑器边栏；运行时不依赖 Unity 或任何具体业务程序集。
 
+## 直接安装
+
+仓库中已提供可直接安装的 VSIX：
+
+```text
+Installer\P4HistroyPlugin.vsix
+```
+
+关闭所有 Visual Studio 实例后双击该文件，按 VSIX Installer 提示完成安装。如果机器上仍安装着旧版 `P4 Line Lens`，请先将旧版卸载，避免同时加载两个扩展。
+
 ## 跨项目行为
 
 - 不绑定 solution、depot、stream 或固定 `P4CLIENT`。
@@ -33,7 +43,7 @@ P4 Histroy Plugin 是一个面向 Visual Studio 2022 的轻量 VSIX。在代码�
 dist\P4HistroyPlugin.vsix
 ```
 
-双击 `.vsix` 安装。Visual Studio 重启后，打开任意已纳入 P4 的文本文件即可看到边栏。
+需要发布新的安装包时，将 `dist\P4HistroyPlugin.vsix` 复制到 `Installer\P4HistroyPlugin.vsix` 并一同提交。Visual Studio 重启后，打开任意已纳入 P4 的文本文件即可看到边栏。
 
 ## 当前交互
 
