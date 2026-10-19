@@ -1,6 +1,6 @@
-# P4 Line Lens
+# P4 Histroy Plugin
 
-P4 Line Lens 是一个面向 Visual Studio 2022 的轻量 VSIX。在代码编辑器左侧逐行显示：
+P4 Histroy Plugin 是一个面向 Visual Studio 2022 的轻量 VSIX。在代码编辑器左侧逐行显示：
 
 ```text
 提交人 · CL 变更号 · 日期

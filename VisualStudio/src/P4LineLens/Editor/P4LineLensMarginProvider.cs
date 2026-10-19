@@ -103,7 +103,7 @@ namespace P4LineLens.Editor
                 FontSize = 14,
                 Opacity = 0.35,
                 Content = "‹",
-                ToolTip = "折叠 P4 Line Lens",
+                ToolTip = "折叠 P4 Histroy Plugin",
             };
             _toggleButton.Click += OnToggleButtonClick;
             Panel.SetZIndex(_toggleButton, 1);
@@ -191,7 +191,7 @@ namespace P4LineLens.Editor
                 _annotationService.Invalidate(_filePath);
             }
 
-            SetExpandedPresentation(LoadingWidth, "P4 Line Lens 正在查询…");
+            SetExpandedPresentation(LoadingWidth, "P4 Histroy Plugin 正在查询…");
             ShowStatus("P4 加载…");
 
             try
@@ -207,7 +207,7 @@ namespace P4LineLens.Editor
                     _baseline = Array.Empty<AnnotationLine>();
                     _mapped = Array.Empty<AnnotationLine>();
                     _workspace = null;
-                    SetExpandedPresentation(ErrorWidth, $"P4 Line Lens：{result.Error}\n右键可重新查询");
+                    SetExpandedPresentation(ErrorWidth, $"P4 Histroy Plugin：{result.Error}\n右键可重新查询");
                     ShowStatus("P4 !");
                     return;
                 }
@@ -406,10 +406,10 @@ namespace P4LineLens.Editor
         private void ApplyCollapsedState()
         {
             _root.Width = _isCollapsed ? CollapsedWidth : _expandedWidth;
-            _root.ToolTip = _isCollapsed ? "展开 P4 Line Lens" : _expandedToolTip;
+            _root.ToolTip = _isCollapsed ? "展开 P4 Histroy Plugin" : _expandedToolTip;
             _canvas.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
             _toggleButton.Content = _isCollapsed ? "›" : "‹";
-            _toggleButton.ToolTip = _isCollapsed ? "展开 P4 Line Lens" : "折叠 P4 Line Lens";
+            _toggleButton.ToolTip = _isCollapsed ? "展开 P4 Histroy Plugin" : "折叠 P4 Histroy Plugin";
             _toggleButton.Opacity = _isCollapsed ? 0.85 : 0.35;
             SyncTheme();
         }
