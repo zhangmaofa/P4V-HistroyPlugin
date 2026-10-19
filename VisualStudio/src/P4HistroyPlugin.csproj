@@ -6,9 +6,9 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <AssemblyName>P4LineLens</AssemblyName>
-    <RootNamespace>P4LineLens</RootNamespace>
-    <Version>0.1.6</Version>
+    <AssemblyName>P4HistroyPlugin</AssemblyName>
+    <RootNamespace>P4HistroyPlugin</RootNamespace>
+    <Version>0.1.7</Version>
     <CreateVsixContainer>true</CreateVsixContainer>
     <DeployExtension>false</DeployExtension>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>
@@ -38,7 +38,7 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
   <Target Name="BuildVsixContainer" AfterTargets="Build" DependsOnTargets="CreateVsixContainer">
-    <MakeDir Directories="$(MSBuildThisFileDirectory)..\..\dist" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(MSBuildThisFileDirectory)..\..\dist" />
+    <MakeDir Directories="$(MSBuildThisFileDirectory)..\dist" />
+    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(MSBuildThisFileDirectory)..\dist" />
   </Target>
 </Project>

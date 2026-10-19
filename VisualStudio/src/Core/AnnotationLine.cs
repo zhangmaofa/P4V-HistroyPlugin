@@ -1,6 +1,6 @@
 using System;
 
-namespace P4LineLens.Core
+namespace P4HistroyPlugin.Core
 {
     internal sealed class AnnotationLine
     {

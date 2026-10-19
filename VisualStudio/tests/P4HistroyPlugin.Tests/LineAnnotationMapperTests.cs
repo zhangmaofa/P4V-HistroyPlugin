@@ -1,8 +1,8 @@
 using System;
-using P4LineLens.Core;
+using P4HistroyPlugin.Core;
 using Xunit;
 
-namespace P4LineLens.Tests;
+namespace P4HistroyPlugin.Tests;
 
 public sealed class LineAnnotationMapperTests
 {

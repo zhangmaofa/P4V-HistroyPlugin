@@ -24,13 +24,13 @@ P4 Histroy Plugin 是一个面向 Visual Studio 2022 的轻量 VSIX。在代码�
 要求 Visual Studio 2022 或 Build Tools、.NET Framework 4.7.2 targeting pack，以及可访问 NuGet.org。
 
 ```powershell
-& 'E:\VisualStudio2022\MSBuild\Current\Bin\MSBuild.exe' .\P4LineLens.sln /restore /t:Build /p:Configuration=Release
+& 'E:\VisualStudio2022\MSBuild\Current\Bin\MSBuild.exe' .\P4HistroyPlugin.sln /restore /t:Build /p:Configuration=Release
 ```
 
 生成的安装包位于（构建时也会复制一份到 `dist`）：
 
 ```text
-dist\P4LineLens.vsix
+dist\P4HistroyPlugin.vsix
 ```
 
 双击 `.vsix` 安装。Visual Studio 重启后，打开任意已纳入 P4 的文本文件即可看到边栏。

@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace P4LineLens.Core
+namespace P4HistroyPlugin.Core
 {
     internal sealed class AnnotationLoadResult
     {

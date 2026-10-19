@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\P4LineLens\Core\AnnotationLine.cs" Link="Core\AnnotationLine.cs" />
-    <Compile Include="..\..\src\P4LineLens\Core\P4TaggedParser.cs" Link="Core\P4TaggedParser.cs" />
-    <Compile Include="..\..\src\P4LineLens\Core\LineAnnotationMapper.cs" Link="Core\LineAnnotationMapper.cs" />
+    <Compile Include="..\..\src\Core\AnnotationLine.cs" Link="Core\AnnotationLine.cs" />
+    <Compile Include="..\..\src\Core\P4TaggedParser.cs" Link="Core\P4TaggedParser.cs" />
+    <Compile Include="..\..\src\Core\LineAnnotationMapper.cs" Link="Core\LineAnnotationMapper.cs" />
   </ItemGroup>
 </Project>

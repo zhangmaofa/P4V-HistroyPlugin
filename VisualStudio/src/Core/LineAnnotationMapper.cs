@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace P4LineLens.Core
+namespace P4HistroyPlugin.Core
 {
     internal static class LineAnnotationMapper
     {

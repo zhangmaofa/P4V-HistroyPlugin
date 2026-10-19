@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="P4HistroyPlugin.5cc41806-603e-4fa5-bf46-b6860e16bf74" Version="0.1.6" Language="zh-CN" Publisher="SGame Tools" />
+    <Identity Id="P4HistroyPlugin.5cc41806-603e-4fa5-bf46-b6860e16bf74" Version="0.1.7" Language="zh-CN" Publisher="SGame Tools" />
     <DisplayName>P4 Histroy Plugin</DisplayName>
     <Description xml:space="preserve">在 Visual Studio 编辑器中逐行显示 Perforce changelist、提交人和日期。</Description>
     <Tags>Perforce,P4,annotate,blame,changelist</Tags>
@@ -24,6 +24,6 @@
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" DisplayName="Visual Studio core editor" />
   </Prerequisites>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="P4LineLens.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="P4HistroyPlugin.dll" />
   </Assets>
 </PackageManifest>

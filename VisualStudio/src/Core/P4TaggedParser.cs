@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
-namespace P4LineLens.Core
+namespace P4HistroyPlugin.Core
 {
     internal static class P4TaggedParser
     {

@@ -13,23 +13,23 @@ using System.Windows.Threading;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
-using P4LineLens.Core;
+using P4HistroyPlugin.Core;
 
-namespace P4LineLens.Editor
+namespace P4HistroyPlugin.Editor
 {
     [Export(typeof(IWpfTextViewMarginProvider))]
-    [Name(P4LineLensMargin.MarginName)]
+    [Name(P4HistroyPluginMargin.MarginName)]
     [MarginContainer(PredefinedMarginNames.Left)]
     [Order(After = PredefinedMarginNames.LineNumber)]
     [ContentType("text")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
-    internal sealed class P4LineLensMarginProvider : IWpfTextViewMarginProvider
+    internal sealed class P4HistroyPluginMarginProvider : IWpfTextViewMarginProvider
     {
         private readonly ITextDocumentFactoryService _documentFactory;
         private readonly P4AnnotationService _annotationService = new P4AnnotationService();
 
         [ImportingConstructor]
-        public P4LineLensMarginProvider(ITextDocumentFactoryService documentFactory)
+        public P4HistroyPluginMarginProvider(ITextDocumentFactoryService documentFactory)
         {
             _documentFactory = documentFactory;
         }
@@ -38,14 +38,14 @@ namespace P4LineLens.Editor
         {
             var documentBuffer = textViewHost.TextView.TextDataModel.DocumentBuffer;
             return _documentFactory.TryGetTextDocument(documentBuffer, out var document)
-                ? new P4LineLensMargin(textViewHost.TextView, document.FilePath, _annotationService)
+                ? new P4HistroyPluginMargin(textViewHost.TextView, document.FilePath, _annotationService)
                 : null;
         }
     }
 
-    internal sealed class P4LineLensMargin : IWpfTextViewMargin
+    internal sealed class P4HistroyPluginMargin : IWpfTextViewMargin
     {
-        public const string MarginName = "P4LineLensMargin";
+        public const string MarginName = "P4HistroyPluginMargin";
 
         private const double ExpandedWidth = 184;
         private const double LoadingWidth = 84;
@@ -72,7 +72,7 @@ namespace P4LineLens.Editor
         private bool _isCollapsed;
         private bool _disposed;
 
-        public P4LineLensMargin(IWpfTextView view, string filePath, P4AnnotationService annotationService)
+        public P4HistroyPluginMargin(IWpfTextView view, string filePath, P4AnnotationService annotationService)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
