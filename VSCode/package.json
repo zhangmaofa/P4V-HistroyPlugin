@@ -1,0 +1,100 @@
+{
+  "name": "p4-histroy-plugin",
+  "displayName": "P4 Histroy Plugin",
+  "description": "Display Perforce changelist and author information for each line.",
+  "version": "0.1.0",
+  "publisher": "sgame-tools",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhangmaofa/P4V-HistroyPlugin.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "SCM Providers"
+  ],
+  "keywords": [
+    "perforce",
+    "p4",
+    "annotate",
+    "blame",
+    "changelist"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "p4HistroyPlugin.toggle",
+        "title": "显示/隐藏行级记录",
+        "category": "P4 Histroy Plugin",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "p4HistroyPlugin.refresh",
+        "title": "刷新当前文件",
+        "category": "P4 Histroy Plugin",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "p4HistroyPlugin.openChange",
+        "title": "在 P4V 中打开当前行的 Changelist",
+        "category": "P4 Histroy Plugin"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "p4HistroyPlugin.refresh",
+          "when": "resourceScheme == file",
+          "group": "navigation@90"
+        },
+        {
+          "command": "p4HistroyPlugin.toggle",
+          "when": "resourceScheme == file",
+          "group": "navigation@91"
+        }
+      ],
+      "editor/lineNumber/context": [
+        {
+          "command": "p4HistroyPlugin.openChange",
+          "when": "resourceScheme == file",
+          "group": "navigation@90"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "P4 Histroy Plugin",
+      "properties": {
+        "p4HistroyPlugin.p4Path": {
+          "type": "string",
+          "default": "p4",
+          "description": "p4 命令行程序路径。Windows 可填写 p4.exe 的完整路径。"
+        },
+        "p4HistroyPlugin.p4vPath": {
+          "type": "string",
+          "default": "p4v",
+          "description": "P4V 程序路径。Windows 可填写 p4v.exe 的完整路径。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test out/test/*.test.js",
+    "package": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && vsce package --out dist/P4HistroyPlugin-VSCode.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^4.1.0",
+    "typescript": "^5.7.2"
+  }
+}

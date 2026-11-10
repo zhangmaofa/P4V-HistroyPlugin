@@ -8,7 +8,7 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AssemblyName>P4HistroyPlugin</AssemblyName>
     <RootNamespace>P4HistroyPlugin</RootNamespace>
-    <Version>0.1.7</Version>
+    <Version>0.1.8</Version>
     <CreateVsixContainer>true</CreateVsixContainer>
     <DeployExtension>false</DeployExtension>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>

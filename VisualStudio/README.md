@@ -1,6 +1,6 @@
 # P4 Histroy Plugin
 
-P4 Histroy Plugin 是一个面向 Visual Studio 2022 的轻量 VSIX。在代码编辑器左侧逐行显示：
+P4 Histroy Plugin 是一个面向 Visual Studio 2022 和 Visual Studio 2026 的轻量 VSIX。在代码编辑器左侧逐行显示：
 
 ```text
 提交人 · CL 变更号 · 日期
@@ -31,7 +31,7 @@ Installer\P4HistroyPlugin.vsix
 
 ## 构建
 
-要求 Visual Studio 2022 或 Build Tools、.NET Framework 4.7.2 targeting pack，以及可访问 NuGet.org。
+要求 Visual Studio 2022/2026 或相应 Build Tools、.NET Framework 4.7.2 targeting pack，以及可访问 NuGet.org。
 
 ```powershell
 & 'E:\VisualStudio2022\MSBuild\Current\Bin\MSBuild.exe' .\P4HistroyPlugin.sln /restore /t:Build /p:Configuration=Release
@@ -59,4 +59,4 @@ dist\P4HistroyPlugin.vsix
 - `p4 annotate` 在后台进程执行，不阻塞 UI 线程。
 - 只为屏幕上可见的行创建 WPF 元素。
 - 初次打开大文件取决于 P4 Server 的 annotate 速度；结果会在编辑器视图中缓存。
-- 当前版本面向 VS 2022（17.x）和 Windows。
+- 当前版本以 VS 2022（17.x）API 为最低兼容基线，同时支持 VS 2026；运行环境为 Windows。

@@ -1,0 +1,8 @@
+.vscode/**
+src/**
+out/test/**
+**/*.map
+tsconfig.json
+package-lock.json
+dist/**
+Installer/**
