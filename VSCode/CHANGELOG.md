@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.2.1
+
+- Rename the manual workspace fields to clearer Chinese labels: project root, server address, username, and workspace.
+
 ## 0.2.0
 
 - Capture successfully resolved workspaces in a shared user-level settings file.

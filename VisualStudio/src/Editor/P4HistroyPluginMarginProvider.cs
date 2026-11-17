@@ -423,7 +423,7 @@ namespace P4HistroyPlugin.Editor
         {
             var time = annotation.ModifiedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? "未知";
             var source = _workspace?.IsManual == true ? "手动设置" : "自动识别/已保存";
-            return $"提交人：{annotation.User}\nChangelist：{annotation.Change}\n时间：{time}\n提交 workspace：{annotation.Client}\n当前 server：{_workspace?.ConnectionAddress}\n当前 client：{_workspace?.Client}\n本地 Root：{_workspace?.Root}\n工作区来源：{source}\n\n双击在 P4V 中打开";
+            return $"提交人：{annotation.User}\nChangelist：{annotation.Change}\n时间：{time}\n提交工作区：{annotation.Client}\n服务器地址：{_workspace?.ConnectionAddress}\n当前工作区：{_workspace?.Client}\n项目根目录：{_workspace?.Root}\n工作区来源：{source}\n\n双击在 P4V 中打开";
         }
 
         private void ShowStatus(string text)

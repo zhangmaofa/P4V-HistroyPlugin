@@ -75,7 +75,7 @@ export class WorkspaceSettingsStore {
 
   private async save(setting: StoredWorkspaceSetting): Promise<void> {
     if (!isComplete(setting)) {
-      throw new Error('P4 workspace 设置必须包含 Root、P4PORT、P4USER 和 P4CLIENT。');
+      throw new Error('P4 工作区设置必须包含项目根目录、服务器地址、用户名和工作区。');
     }
 
     setting.root = path.resolve(setting.root);

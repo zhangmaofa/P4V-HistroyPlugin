@@ -2,7 +2,7 @@
   "name": "p4-histroy-plugin",
   "displayName": "P4 Histroy Plugin",
   "description": "Display Perforce changelist and author information for each line.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "sgame-tools",
   "license": "UNLICENSED",
   "repository": {

@@ -120,7 +120,7 @@ namespace P4HistroyPlugin.Core
         {
             if (!IsComplete(setting))
             {
-                throw new ArgumentException("P4 workspace 设置必须包含 Root、P4PORT、P4USER 和 P4CLIENT。", nameof(setting));
+                throw new ArgumentException("P4 工作区设置必须包含项目根目录、服务器地址、用户名和工作区。", nameof(setting));
             }
 
             setting.Root = NormalizePath(setting.Root);

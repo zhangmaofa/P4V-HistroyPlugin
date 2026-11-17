@@ -37,7 +37,7 @@ namespace P4HistroyPlugin.Editor
 
             var description = new TextBlock
             {
-                Text = "该设置按本地 Root 匹配文件，并优先于环境变量。不会保存密码；P4 登录票据仍由 P4 管理。",
+                Text = "该设置按项目根目录匹配文件，并优先于环境变量。不会保存密码；P4 登录票据仍由 P4 管理。",
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(0, 0, 0, 14),
             };
@@ -45,10 +45,10 @@ namespace P4HistroyPlugin.Editor
             Grid.SetColumnSpan(description, 2);
             panel.Children.Add(description);
 
-            _root = AddField(panel, 1, "本地 Root", workspace?.Root ?? Path.GetDirectoryName(filePath) ?? string.Empty);
-            _port = AddField(panel, 2, "P4PORT", workspace?.ConnectionAddress ?? string.Empty);
-            _user = AddField(panel, 3, "P4USER", workspace?.User ?? string.Empty);
-            _client = AddField(panel, 4, "P4CLIENT", workspace?.Client ?? string.Empty);
+            _root = AddField(panel, 1, "项目根目录", workspace?.Root ?? Path.GetDirectoryName(filePath) ?? string.Empty);
+            _port = AddField(panel, 2, "服务器地址", workspace?.ConnectionAddress ?? string.Empty);
+            _user = AddField(panel, 3, "用户名", workspace?.User ?? string.Empty);
+            _client = AddField(panel, 4, "工作区", workspace?.Client ?? string.Empty);
 
             var pathLabel = new TextBlock
             {
@@ -131,7 +131,7 @@ namespace P4HistroyPlugin.Editor
             {
                 MessageBox.Show(
                     this,
-                    "本地 Root、P4PORT、P4USER 和 P4CLIENT 都必须填写。",
+                    "项目根目录、服务器地址、用户名和工作区都必须填写。",
                     "P4 Histroy Plugin",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -142,7 +142,7 @@ namespace P4HistroyPlugin.Editor
             {
                 MessageBox.Show(
                     this,
-                    "本地 Root 目录不存在，请检查路径。",
+                    "项目根目录不存在，请检查路径。",
                     "P4 Histroy Plugin",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -156,7 +156,7 @@ namespace P4HistroyPlugin.Editor
             {
                 MessageBox.Show(
                     this,
-                    "当前文件不在填写的本地 Root 目录下。",
+                    "当前文件不在填写的项目根目录下。",
                     "P4 Histroy Plugin",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);

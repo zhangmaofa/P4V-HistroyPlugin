@@ -312,9 +312,9 @@ function historyHover(
     hover.appendMarkdown(`**提交 workspace：** ${escapeMarkdown(annotation.client)}  \n`);
   }
   if (workspace) {
-    hover.appendMarkdown(`**当前 server：** ${escapeMarkdown(workspace.connectionAddress)}  \n`);
-    hover.appendMarkdown(`**当前 client：** ${escapeMarkdown(workspace.client)}  \n\n`);
-    hover.appendMarkdown(`**本地 Root：** ${escapeMarkdown(workspace.root)}  \n`);
+    hover.appendMarkdown(`**服务器地址：** ${escapeMarkdown(workspace.connectionAddress)}  \n`);
+    hover.appendMarkdown(`**当前工作区：** ${escapeMarkdown(workspace.client)}  \n\n`);
+    hover.appendMarkdown(`**项目根目录：** ${escapeMarkdown(workspace.root)}  \n`);
     hover.appendMarkdown(`**工作区来源：** ${workspace.isManual ? '手动设置' : '自动识别/已保存'}  \n\n`);
   }
   const commandArgs = encodeURIComponent(JSON.stringify([{
@@ -397,10 +397,10 @@ async function configureWorkspace(resource?: vscode.Uri): Promise<void> {
     ?? path.dirname(document.fileName);
   const root = await vscode.window.showInputBox({
     title: '设置 P4 工作区（1/4）',
-    prompt: '本地 workspace Root',
+    prompt: '项目根目录',
     value: defaultRoot,
     ignoreFocusOut: true,
-    validateInput: value => value.trim() ? undefined : '本地 Root 不能为空。'
+    validateInput: value => value.trim() ? undefined : '项目根目录不能为空。'
   });
   if (root === undefined) {
     return;
@@ -408,25 +408,25 @@ async function configureWorkspace(resource?: vscode.Uri): Promise<void> {
   try {
     const rootStat = await vscode.workspace.fs.stat(vscode.Uri.file(root.trim()));
     if ((rootStat.type & vscode.FileType.Directory) === 0) {
-      void vscode.window.showWarningMessage('本地 Root 必须是目录。');
+      void vscode.window.showWarningMessage('项目根目录必须是目录。');
       return;
     }
   } catch {
-    void vscode.window.showWarningMessage('本地 Root 目录不存在，请检查路径。');
+    void vscode.window.showWarningMessage('项目根目录不存在，请检查路径。');
     return;
   }
   const relativeToRoot = path.relative(path.resolve(root.trim()), path.resolve(document.fileName));
   if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
-    void vscode.window.showWarningMessage('当前文件不在填写的本地 Root 目录下。');
+    void vscode.window.showWarningMessage('当前文件不在填写的项目根目录下。');
     return;
   }
 
   const port = await vscode.window.showInputBox({
     title: '设置 P4 工作区（2/4）',
-    prompt: 'P4PORT，例如 ssl:perforce.example.com:1666',
+    prompt: '服务器地址，例如 ssl:perforce.example.com:1666',
     value: current?.connectionAddress ?? '',
     ignoreFocusOut: true,
-    validateInput: value => value.trim() ? undefined : 'P4PORT 不能为空。'
+    validateInput: value => value.trim() ? undefined : '服务器地址不能为空。'
   });
   if (port === undefined) {
     return;
@@ -434,10 +434,10 @@ async function configureWorkspace(resource?: vscode.Uri): Promise<void> {
 
   const user = await vscode.window.showInputBox({
     title: '设置 P4 工作区（3/4）',
-    prompt: 'P4USER',
+    prompt: '用户名',
     value: current?.user ?? '',
     ignoreFocusOut: true,
-    validateInput: value => value.trim() ? undefined : 'P4USER 不能为空。'
+    validateInput: value => value.trim() ? undefined : '用户名不能为空。'
   });
   if (user === undefined) {
     return;
@@ -445,10 +445,10 @@ async function configureWorkspace(resource?: vscode.Uri): Promise<void> {
 
   const client = await vscode.window.showInputBox({
     title: '设置 P4 工作区（4/4）',
-    prompt: 'P4CLIENT / workspace 名称',
+    prompt: '工作区',
     value: current?.client ?? '',
     ignoreFocusOut: true,
-    validateInput: value => value.trim() ? undefined : 'P4CLIENT 不能为空。'
+    validateInput: value => value.trim() ? undefined : '工作区不能为空。'
   });
   if (client === undefined) {
     return;
