@@ -7,3 +7,8 @@ P4 server and workspace from the file being edited; no repository is hard-coded.
 - [`VSCode/`](VSCode/README.md): Visual Studio Code.
 
 Installable packages are committed under each editor's `Installer/` directory.
+
+Both extensions share the user-level workspace cache at
+`%LOCALAPPDATA%\P4HistroyPlugin\workspaces.json`. A successfully resolved
+workspace is captured automatically; users can later override or clear it from
+either editor without storing a P4 password.

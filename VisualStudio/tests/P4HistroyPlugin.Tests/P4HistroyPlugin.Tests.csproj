@@ -19,5 +19,8 @@
     <Compile Include="..\..\src\Core\AnnotationLine.cs" Link="Core\AnnotationLine.cs" />
     <Compile Include="..\..\src\Core\P4TaggedParser.cs" Link="Core\P4TaggedParser.cs" />
     <Compile Include="..\..\src\Core\LineAnnotationMapper.cs" Link="Core\LineAnnotationMapper.cs" />
+    <Compile Include="..\..\src\Core\P4WorkspaceSettingsStore.cs" Link="Core\P4WorkspaceSettingsStore.cs" />
+    <Compile Include="..\..\src\Core\P4WorkspaceResolver.cs" Link="Core\P4WorkspaceResolver.cs" />
+    <Compile Include="..\..\src\Core\ProcessRunner.cs" Link="Core\ProcessRunner.cs" />
   </ItemGroup>
 </Project>

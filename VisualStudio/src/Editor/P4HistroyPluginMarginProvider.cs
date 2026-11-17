@@ -216,7 +216,7 @@ namespace P4HistroyPlugin.Editor
                 _workspace = result.Workspace;
                 SetExpandedPresentation(
                     ExpandedWidth,
-                    $"P4 server: {_workspace?.ConnectionAddress}\nP4 client: {_workspace?.Client}\n右键刷新");
+                    $"P4 server: {_workspace?.ConnectionAddress}\nP4 client: {_workspace?.Client}\nP4 root: {_workspace?.Root}\n来源: {(_workspace?.IsManual == true ? "手动设置" : "自动识别/已保存")}\n右键可刷新或设置工作区");
                 RemapAndRender();
             }
             catch (OperationCanceledException)
@@ -326,7 +326,66 @@ namespace P4HistroyPlugin.Editor
             var refresh = new MenuItem { Header = "刷新 P4 行归属" };
             refresh.Click += (_, __) => _ = RefreshAsync(invalidateWorkspace: true);
             menu.Items.Add(refresh);
+
+            menu.Items.Add(new Separator());
+            var configure = new MenuItem { Header = "设置当前文件的 P4 工作区…" };
+            configure.Click += (_, __) => ConfigureWorkspace();
+            menu.Items.Add(configure);
+
+            var clear = new MenuItem { Header = "清除当前文件的工作区设置" };
+            clear.Click += (_, __) => ClearWorkspaceSetting();
+            menu.Items.Add(clear);
             return menu;
+        }
+
+        private void ConfigureWorkspace()
+        {
+            var dialog = new P4WorkspaceSettingsDialog(
+                _filePath,
+                _workspace,
+                _annotationService.SettingsPath)
+            {
+                Owner = Window.GetWindow(_root),
+            };
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            try
+            {
+                _annotationService.SaveManualWorkspace(
+                    dialog.RootValue,
+                    dialog.PortValue,
+                    dialog.UserValue,
+                    dialog.ClientValue);
+                _ = RefreshAsync(invalidateWorkspace: true);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(
+                    Window.GetWindow(_root),
+                    exception.Message,
+                    "P4 Histroy Plugin",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void ClearWorkspaceSetting()
+        {
+            if (!_annotationService.ClearSavedWorkspace(_filePath))
+            {
+                MessageBox.Show(
+                    Window.GetWindow(_root),
+                    "当前文件没有已保存的工作区设置。",
+                    "P4 Histroy Plugin",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            _ = RefreshAsync(invalidateWorkspace: true);
         }
 
         private ContextMenu CreateLineContextMenu(AnnotationLine annotation)
@@ -363,7 +422,8 @@ namespace P4HistroyPlugin.Editor
         private string BuildToolTip(AnnotationLine annotation)
         {
             var time = annotation.ModifiedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? "未知";
-            return $"提交人：{annotation.User}\nChangelist：{annotation.Change}\n时间：{time}\n提交 workspace：{annotation.Client}\n当前 server：{_workspace?.ConnectionAddress}\n当前 client：{_workspace?.Client}\n\n双击在 P4V 中打开";
+            var source = _workspace?.IsManual == true ? "手动设置" : "自动识别/已保存";
+            return $"提交人：{annotation.User}\nChangelist：{annotation.Change}\n时间：{time}\n提交 workspace：{annotation.Client}\n当前 server：{_workspace?.ConnectionAddress}\n当前 client：{_workspace?.Client}\n本地 Root：{_workspace?.Root}\n工作区来源：{source}\n\n双击在 P4V 中打开";
         }
 
         private void ShowStatus(string text)

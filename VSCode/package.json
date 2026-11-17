@@ -2,7 +2,7 @@
   "name": "p4-histroy-plugin",
   "displayName": "P4 Histroy Plugin",
   "description": "Display Perforce changelist and author information for each line.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "sgame-tools",
   "license": "UNLICENSED",
   "repository": {
@@ -45,6 +45,16 @@
         "command": "p4HistroyPlugin.openChange",
         "title": "在 P4V 中打开当前行的 Changelist",
         "category": "P4 Histroy Plugin"
+      },
+      {
+        "command": "p4HistroyPlugin.setWorkspace",
+        "title": "设置当前文件的 P4 工作区",
+        "category": "P4 Histroy Plugin"
+      },
+      {
+        "command": "p4HistroyPlugin.clearWorkspace",
+        "title": "清除当前文件的 P4 工作区设置",
+        "category": "P4 Histroy Plugin"
       }
     ],
     "menus": {
@@ -65,6 +75,18 @@
           "command": "p4HistroyPlugin.openChange",
           "when": "resourceScheme == file",
           "group": "navigation@90"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "p4HistroyPlugin.setWorkspace",
+          "when": "resourceScheme == file",
+          "group": "p4@1"
+        },
+        {
+          "command": "p4HistroyPlugin.clearWorkspace",
+          "when": "resourceScheme == file",
+          "group": "p4@2"
         }
       ]
     },

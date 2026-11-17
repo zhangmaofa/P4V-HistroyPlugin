@@ -59,6 +59,8 @@ namespace P4HistroyPlugin.Core
                 var result = await P4WorkspaceResolver.RunP4Async(
                     workspace.WorkingDirectory,
                     workspace.Client,
+                    workspace.User,
+                    workspace.ConnectionAddress,
                     new[] { "annotate", "-c", "-u", "-q", filePath + "#have" },
                     cancellationToken).ConfigureAwait(false);
 
@@ -85,6 +87,18 @@ namespace P4HistroyPlugin.Core
         public void Invalidate(string filePath)
         {
             _workspaceResolver.Invalidate(filePath);
+        }
+
+        public string SettingsPath => _workspaceResolver.SettingsPath;
+
+        public void SaveManualWorkspace(string root, string port, string user, string client)
+        {
+            _workspaceResolver.SaveManual(root, port, user, client);
+        }
+
+        public bool ClearSavedWorkspace(string filePath)
+        {
+            return _workspaceResolver.ClearSaved(filePath);
         }
 
         public bool OpenChange(P4WorkspaceContext workspace, int change)

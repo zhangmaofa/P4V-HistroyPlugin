@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'node:path';
 import { mapAnnotations } from './lineMapper';
 import { P4Service } from './p4';
 import { AnnotationLine, P4WorkspaceContext } from './types';
@@ -67,6 +68,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand('p4HistroyPlugin.openChange', (argument?: OpenChangeArgument) => {
       openChange(argument);
+    }),
+    vscode.commands.registerCommand('p4HistroyPlugin.setWorkspace', async (resource?: vscode.Uri) => {
+      await configureWorkspace(resource);
+    }),
+    vscode.commands.registerCommand('p4HistroyPlugin.clearWorkspace', async (resource?: vscode.Uri) => {
+      await clearWorkspace(resource);
     }),
     vscode.window.onDidChangeVisibleTextEditors(editors => {
       void loadEditors(editors);
@@ -307,6 +314,8 @@ function historyHover(
   if (workspace) {
     hover.appendMarkdown(`**当前 server：** ${escapeMarkdown(workspace.connectionAddress)}  \n`);
     hover.appendMarkdown(`**当前 client：** ${escapeMarkdown(workspace.client)}  \n\n`);
+    hover.appendMarkdown(`**本地 Root：** ${escapeMarkdown(workspace.root)}  \n`);
+    hover.appendMarkdown(`**工作区来源：** ${workspace.isManual ? '手动设置' : '自动识别/已保存'}  \n\n`);
   }
   const commandArgs = encodeURIComponent(JSON.stringify([{
     uri: uri.toString(),
@@ -367,11 +376,108 @@ function updateStatusBar(): void {
     statusBar.tooltip = state.error;
   } else if (state?.workspace) {
     statusBar.text = `$(git-commit) P4 ${state.workspace.client}`;
-    statusBar.tooltip = `${state.workspace.connectionAddress}\n${state.workspace.client}\n点击隐藏行级记录`;
+    const source = state.workspace.isManual ? '手动设置' : '自动识别/已保存';
+    statusBar.tooltip = `${state.workspace.connectionAddress}\n${state.workspace.client}\n${state.workspace.root}\n${source}\n点击隐藏行级记录`;
   } else {
     statusBar.text = '$(git-commit) P4 History';
     statusBar.tooltip = '点击隐藏行级记录';
   }
+}
+
+async function configureWorkspace(resource?: vscode.Uri): Promise<void> {
+  const document = findDocument(resource) ?? vscode.window.activeTextEditor?.document;
+  if (!document || document.uri.scheme !== 'file') {
+    void vscode.window.showInformationMessage('请先打开一个本地文件。');
+    return;
+  }
+
+  const current = states.get(document.uri.toString())?.workspace;
+  const defaultRoot = current?.root
+    ?? vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath
+    ?? path.dirname(document.fileName);
+  const root = await vscode.window.showInputBox({
+    title: '设置 P4 工作区（1/4）',
+    prompt: '本地 workspace Root',
+    value: defaultRoot,
+    ignoreFocusOut: true,
+    validateInput: value => value.trim() ? undefined : '本地 Root 不能为空。'
+  });
+  if (root === undefined) {
+    return;
+  }
+  try {
+    const rootStat = await vscode.workspace.fs.stat(vscode.Uri.file(root.trim()));
+    if ((rootStat.type & vscode.FileType.Directory) === 0) {
+      void vscode.window.showWarningMessage('本地 Root 必须是目录。');
+      return;
+    }
+  } catch {
+    void vscode.window.showWarningMessage('本地 Root 目录不存在，请检查路径。');
+    return;
+  }
+  const relativeToRoot = path.relative(path.resolve(root.trim()), path.resolve(document.fileName));
+  if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
+    void vscode.window.showWarningMessage('当前文件不在填写的本地 Root 目录下。');
+    return;
+  }
+
+  const port = await vscode.window.showInputBox({
+    title: '设置 P4 工作区（2/4）',
+    prompt: 'P4PORT，例如 ssl:perforce.example.com:1666',
+    value: current?.connectionAddress ?? '',
+    ignoreFocusOut: true,
+    validateInput: value => value.trim() ? undefined : 'P4PORT 不能为空。'
+  });
+  if (port === undefined) {
+    return;
+  }
+
+  const user = await vscode.window.showInputBox({
+    title: '设置 P4 工作区（3/4）',
+    prompt: 'P4USER',
+    value: current?.user ?? '',
+    ignoreFocusOut: true,
+    validateInput: value => value.trim() ? undefined : 'P4USER 不能为空。'
+  });
+  if (user === undefined) {
+    return;
+  }
+
+  const client = await vscode.window.showInputBox({
+    title: '设置 P4 工作区（4/4）',
+    prompt: 'P4CLIENT / workspace 名称',
+    value: current?.client ?? '',
+    ignoreFocusOut: true,
+    validateInput: value => value.trim() ? undefined : 'P4CLIENT 不能为空。'
+  });
+  if (client === undefined) {
+    return;
+  }
+
+  await service.saveManualWorkspace(
+    root.trim(),
+    port.trim(),
+    user.trim(),
+    client.trim()
+  );
+  void vscode.window.showInformationMessage(`已保存当前 P4 工作区：${client.trim()}`);
+  await loadDocument(document);
+}
+
+async function clearWorkspace(resource?: vscode.Uri): Promise<void> {
+  const document = findDocument(resource) ?? vscode.window.activeTextEditor?.document;
+  if (!document || document.uri.scheme !== 'file') {
+    return;
+  }
+
+  const removed = await service.clearSavedWorkspace(document.fileName);
+  if (!removed) {
+    void vscode.window.showInformationMessage('当前文件没有已保存的工作区设置。');
+    return;
+  }
+
+  void vscode.window.showInformationMessage('已清除当前文件的工作区设置，将重新自动识别。');
+  await loadDocument(document);
 }
 
 async function refreshVisibleEditors(): Promise<void> {

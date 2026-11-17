@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.2.0
+
+- Capture successfully resolved workspaces in a shared user-level settings file.
+- Add commands to manually set or clear the workspace for the current file.
+- Pass saved P4PORT, P4USER, and P4CLIENT explicitly when querying P4.
+
 ## 0.1.0
 
 - Initial Visual Studio Code implementation.

@@ -4,9 +4,16 @@ import * as os from 'node:os';
 import * as vscode from 'vscode';
 import { parseAnnotations, parseSettingValue, parseTaggedRecords } from './parsers';
 import { AnnotationLoadResult, P4WorkspaceContext, ProcessResult } from './types';
+import { WorkspaceSettingsStore } from './workspaceSettings';
 
 export class P4Service {
   private readonly workspaceCache = new Map<string, Promise<P4WorkspaceContext | undefined>>();
+
+  constructor(private readonly settings = new WorkspaceSettingsStore()) {}
+
+  get settingsPath(): string {
+    return this.settings.settingsPath;
+  }
 
   async load(filePath: string): Promise<AnnotationLoadResult> {
     const workspace = await this.resolveWorkspace(filePath);
@@ -17,6 +24,8 @@ export class P4Service {
     const result = await this.runP4(
       workspace.workingDirectory,
       workspace.client,
+      workspace.user,
+      workspace.connectionAddress,
       ['annotate', '-c', '-u', '-q', `${filePath}#have`]
     );
     if (result.exitCode !== 0) {
@@ -35,6 +44,22 @@ export class P4Service {
 
   clearCache(): void {
     this.workspaceCache.clear();
+  }
+
+  async saveManualWorkspace(
+    root: string,
+    port: string,
+    user: string,
+    client: string
+  ): Promise<void> {
+    await this.settings.saveManual(root, port, user, client);
+    this.clearCache();
+  }
+
+  async clearSavedWorkspace(filePath: string): Promise<boolean> {
+    const removed = await this.settings.removeForFile(filePath);
+    this.clearCache();
+    return removed;
   }
 
   openChange(workspace: P4WorkspaceContext, change: number): void {
@@ -82,7 +107,19 @@ export class P4Service {
     filePath: string,
     directory: string
   ): Promise<P4WorkspaceContext | undefined> {
-    const infoResult = await this.runP4(directory, undefined, ['info', '-s']);
+    const saved = await this.settings.findForFile(filePath);
+    if (saved) {
+      return {
+        client: saved.client,
+        user: saved.user,
+        connectionAddress: saved.port,
+        workingDirectory: directory,
+        root: saved.root,
+        isManual: saved.manual
+      };
+    }
+
+    const infoResult = await this.runP4(directory, undefined, undefined, undefined, ['info', '-s']);
     const info = parseTaggedRecords(infoResult.standardOutput)[0];
     const user = info?.get('userName');
     if (!user) {
@@ -95,11 +132,28 @@ export class P4Service {
     const settingAddress = await this.readSetting(directory, 'P4PORT');
     const connectionAddress = settingAddress || reportedServerAddress;
 
-    if (configuredClient && await this.mapsFile(directory, configuredClient, filePath)) {
-      return { client: configuredClient, user, connectionAddress, workingDirectory: directory };
+    if (configuredClient
+      && await this.mapsFile(directory, configuredClient, user, connectionAddress, filePath)) {
+      const root = await this.readClientRoot(directory, configuredClient, user, connectionAddress);
+      const workspace: P4WorkspaceContext = {
+        client: configuredClient,
+        user,
+        connectionAddress,
+        workingDirectory: directory,
+        root: root || directory,
+        isManual: false
+      };
+      await this.settings.saveAuto(workspace);
+      return workspace;
     }
 
-    const clientsResult = await this.runP4(directory, undefined, ['clients', '-u', user]);
+    const clientsResult = await this.runP4(
+      directory,
+      undefined,
+      user,
+      connectionAddress,
+      ['clients', '-u', user]
+    );
     if (clientsResult.exitCode !== 0) {
       return undefined;
     }
@@ -117,21 +171,43 @@ export class P4Service {
       .sort((left, right) => path.resolve(right.root).length - path.resolve(left.root).length);
 
     for (const candidate of candidates) {
-      if (await this.mapsFile(directory, candidate.client, fullFilePath)) {
-        return {
+      if (await this.mapsFile(
+        directory,
+        candidate.client,
+        user,
+        connectionAddress,
+        fullFilePath
+      )) {
+        const workspace: P4WorkspaceContext = {
           client: candidate.client,
           user,
           connectionAddress,
-          workingDirectory: directory
+          workingDirectory: directory,
+          root: candidate.root,
+          isManual: false
         };
+        await this.settings.saveAuto(workspace);
+        return workspace;
       }
     }
 
     return undefined;
   }
 
-  private async mapsFile(directory: string, client: string, filePath: string): Promise<boolean> {
-    const result = await this.runP4(directory, client, ['where', filePath]);
+  private async mapsFile(
+    directory: string,
+    client: string,
+    user: string,
+    connectionAddress: string,
+    filePath: string
+  ): Promise<boolean> {
+    const result = await this.runP4(
+      directory,
+      client,
+      user,
+      connectionAddress,
+      ['where', filePath]
+    );
     if (result.exitCode !== 0) {
       return false;
     }
@@ -140,6 +216,22 @@ export class P4Service {
       const mappedPath = record.get('path');
       return mappedPath ? pathsEqual(mappedPath, filePath) : false;
     });
+  }
+
+  private async readClientRoot(
+    directory: string,
+    client: string,
+    user: string,
+    connectionAddress: string
+  ): Promise<string> {
+    const result = await this.runP4(
+      directory,
+      client,
+      user,
+      connectionAddress,
+      ['client', '-o', client]
+    );
+    return parseTaggedRecords(result.standardOutput)[0]?.get('Root') ?? '';
   }
 
   private async readSetting(directory: string, settingName: string): Promise<string> {
@@ -156,9 +248,17 @@ export class P4Service {
   private runP4(
     directory: string,
     client: string | undefined,
+    user: string | undefined,
+    connectionAddress: string | undefined,
     commandArguments: readonly string[]
   ): Promise<ProcessResult> {
     const args: string[] = [];
+    if (connectionAddress) {
+      args.push('-p', connectionAddress);
+    }
+    if (user) {
+      args.push('-u', user);
+    }
     if (client) {
       args.push('-c', client);
     }

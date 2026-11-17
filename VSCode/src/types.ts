@@ -12,6 +12,8 @@ export interface P4WorkspaceContext {
   readonly user: string;
   readonly connectionAddress: string;
   readonly workingDirectory: string;
+  readonly root: string;
+  readonly isManual: boolean;
 }
 
 export interface AnnotationLoadResult {

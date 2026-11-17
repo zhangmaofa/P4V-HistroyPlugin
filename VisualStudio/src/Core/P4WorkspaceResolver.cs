@@ -10,12 +10,20 @@ namespace P4HistroyPlugin.Core
 {
     internal sealed class P4WorkspaceContext
     {
-        public P4WorkspaceContext(string client, string user, string connectionAddress, string workingDirectory)
+        public P4WorkspaceContext(
+            string client,
+            string user,
+            string connectionAddress,
+            string workingDirectory,
+            string root,
+            bool isManual)
         {
             Client = client;
             User = user;
             ConnectionAddress = connectionAddress;
             WorkingDirectory = workingDirectory;
+            Root = root;
+            IsManual = isManual;
         }
 
         public string Client { get; }
@@ -25,12 +33,19 @@ namespace P4HistroyPlugin.Core
         public string ConnectionAddress { get; }
 
         public string WorkingDirectory { get; }
+
+        public string Root { get; }
+
+        public bool IsManual { get; }
     }
 
     internal sealed class P4WorkspaceResolver
     {
         private readonly ConcurrentDictionary<string, Task<P4WorkspaceContext?>> _cache
             = new ConcurrentDictionary<string, Task<P4WorkspaceContext?>>(StringComparer.OrdinalIgnoreCase);
+        private readonly P4WorkspaceSettingsStore _settings = new P4WorkspaceSettingsStore();
+
+        public string SettingsPath => _settings.SettingsPath;
 
         public async Task<P4WorkspaceContext?> ResolveAsync(string filePath, CancellationToken cancellationToken)
         {
@@ -57,12 +72,43 @@ namespace P4HistroyPlugin.Core
             _cache.TryRemove(directory, out _);
         }
 
-        private static async Task<P4WorkspaceContext?> ResolveCoreAsync(
+        public void SaveManual(string root, string port, string user, string client)
+        {
+            _settings.SaveManual(root, port, user, client);
+            _cache.Clear();
+        }
+
+        public bool ClearSaved(string filePath)
+        {
+            var removed = _settings.RemoveForFile(filePath);
+            _cache.Clear();
+            return removed;
+        }
+
+        private async Task<P4WorkspaceContext?> ResolveCoreAsync(
             string filePath,
             string directory,
             CancellationToken cancellationToken)
         {
-            var infoResult = await RunP4Async(directory, client: null, new[] { "info", "-s" }, cancellationToken).ConfigureAwait(false);
+            var saved = _settings.FindForFile(filePath);
+            if (saved != null)
+            {
+                return new P4WorkspaceContext(
+                    saved.Client,
+                    saved.User,
+                    saved.Port,
+                    directory,
+                    saved.Root,
+                    saved.Manual);
+            }
+
+            var infoResult = await RunP4Async(
+                directory,
+                client: null,
+                user: null,
+                connectionAddress: null,
+                new[] { "info", "-s" },
+                cancellationToken).ConfigureAwait(false);
             var info = FirstRecord(infoResult.StandardOutput);
             if (!TryGet(info, "userName", out var user))
             {
@@ -79,14 +125,30 @@ namespace P4HistroyPlugin.Core
             }
 
             if (!string.IsNullOrWhiteSpace(configuredClient)
-                && await MapsFileAsync(directory, configuredClient, filePath, cancellationToken).ConfigureAwait(false))
+                && await MapsFileAsync(directory, configuredClient, user, connectionAddress, filePath, cancellationToken).ConfigureAwait(false))
             {
-                return new P4WorkspaceContext(configuredClient, user, connectionAddress, directory);
+                var root = await ReadClientRootAsync(
+                    directory,
+                    configuredClient,
+                    user,
+                    connectionAddress,
+                    cancellationToken).ConfigureAwait(false);
+                var workspace = new P4WorkspaceContext(
+                    configuredClient,
+                    user,
+                    connectionAddress,
+                    directory,
+                    string.IsNullOrWhiteSpace(root) ? directory : root,
+                    isManual: false);
+                _settings.SaveAuto(workspace);
+                return workspace;
             }
 
             var clientsResult = await RunP4Async(
                 directory,
                 client: null,
+                user,
+                connectionAddress,
                 new[] { "clients", "-u", user },
                 cancellationToken).ConfigureAwait(false);
             if (!clientsResult.Succeeded)
@@ -111,9 +173,23 @@ namespace P4HistroyPlugin.Core
 
             foreach (var candidate in candidates)
             {
-                if (await MapsFileAsync(directory, candidate.Client, fullFilePath, cancellationToken).ConfigureAwait(false))
+                if (await MapsFileAsync(
+                        directory,
+                        candidate.Client,
+                        user,
+                        connectionAddress,
+                        fullFilePath,
+                        cancellationToken).ConfigureAwait(false))
                 {
-                    return new P4WorkspaceContext(candidate.Client, user, connectionAddress, directory);
+                    var workspace = new P4WorkspaceContext(
+                        candidate.Client,
+                        user,
+                        connectionAddress,
+                        directory,
+                        candidate.Root,
+                        isManual: false);
+                    _settings.SaveAuto(workspace);
+                    return workspace;
                 }
             }
 
@@ -123,10 +199,24 @@ namespace P4HistroyPlugin.Core
         internal static Task<ProcessResult> RunP4Async(
             string workingDirectory,
             string? client,
+            string? user,
+            string? connectionAddress,
             IEnumerable<string> commandArguments,
             CancellationToken cancellationToken)
         {
             var arguments = new List<string>();
+            if (!string.IsNullOrWhiteSpace(connectionAddress))
+            {
+                arguments.Add("-p");
+                arguments.Add(connectionAddress!);
+            }
+
+            if (!string.IsNullOrWhiteSpace(user))
+            {
+                arguments.Add("-u");
+                arguments.Add(user!);
+            }
+
             if (!string.IsNullOrWhiteSpace(client))
             {
                 arguments.Add("-c");
@@ -159,10 +249,18 @@ namespace P4HistroyPlugin.Core
         private static async Task<bool> MapsFileAsync(
             string directory,
             string client,
+            string user,
+            string connectionAddress,
             string filePath,
             CancellationToken cancellationToken)
         {
-            var result = await RunP4Async(directory, client, new[] { "where", filePath }, cancellationToken).ConfigureAwait(false);
+            var result = await RunP4Async(
+                directory,
+                client,
+                user,
+                connectionAddress,
+                new[] { "where", filePath },
+                cancellationToken).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 return false;
@@ -171,6 +269,24 @@ namespace P4HistroyPlugin.Core
             return P4TaggedParser.ParseRecords(result.StandardOutput)
                 .Any(record => TryGet(record, "path", out var mappedPath)
                                && PathsEqual(mappedPath, filePath));
+        }
+
+        private static async Task<string> ReadClientRootAsync(
+            string directory,
+            string client,
+            string user,
+            string connectionAddress,
+            CancellationToken cancellationToken)
+        {
+            var result = await RunP4Async(
+                directory,
+                client,
+                user,
+                connectionAddress,
+                new[] { "client", "-o", client },
+                cancellationToken).ConfigureAwait(false);
+            var record = FirstRecord(result.StandardOutput);
+            return Get(record, "Root");
         }
 
         private static IReadOnlyDictionary<string, string> FirstRecord(string output)
